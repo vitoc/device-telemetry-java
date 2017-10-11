@@ -12,7 +12,7 @@ import play.mvc.Http;
 import java.net.URI;
 import java.util.ArrayList;
 
-public class StorageClient implements IStorageClient {
+public class StorageClient implements IStorageClient, AutoCloseable {
 
     private static final Logger.ALogger log = Logger.of(StorageClient.class);
 
@@ -186,6 +186,13 @@ public class StorageClient implements IStorageClient {
         } else {
             // TODO add logging for connection string error (don't log conn string)
             throw new InvalidConfigurationException("Connection string format error");
+        }
+    }
+
+    @Override
+    public void close() {
+        if (this.client != null) {
+            this.client.close();
         }
     }
 }
