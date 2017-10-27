@@ -2,23 +2,34 @@
 
 package com.microsoft.azure.iotsolutions.devicetelemetry.services;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 import com.microsoft.azure.documentdb.Document;
+import com.microsoft.azure.iotsolutions.devicetelemetry.services.exceptions.ExternalDependencyException;
 import com.microsoft.azure.iotsolutions.devicetelemetry.services.helpers.QueryBuilder;
+import com.microsoft.azure.iotsolutions.devicetelemetry.services.models.AlarmByRuleServiceModel;
 import com.microsoft.azure.iotsolutions.devicetelemetry.services.models.AlarmServiceModel;
+import com.microsoft.azure.iotsolutions.devicetelemetry.services.models.RuleServiceModel;
 import com.microsoft.azure.iotsolutions.devicetelemetry.services.runtime.IServicesConfig;
 import com.microsoft.azure.iotsolutions.devicetelemetry.services.storage.IStorageClient;
 import org.joda.time.DateTime;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.CompletionStage;
 
 public class Alarms implements IAlarms {
+
+    private final IRules rulesService;
     private final IStorageClient storageClient;
     private String databaseName;
     private String collectionId;
 
     @Inject
-    public Alarms(IServicesConfig servicesConfig, IStorageClient storageClient) throws Exception {
+    public Alarms(IServicesConfig servicesConfig, IRules rulesService, IStorageClient storageClient) throws Exception {
+        this.rulesService = rulesService;
         this.storageClient = storageClient;
         this.databaseName = servicesConfig.getAlarmsStorageConfig().getDocumentDbDatabase();
         this.collectionId = servicesConfig.getAlarmsStorageConfig().getDocumentDbCollection();
@@ -30,23 +41,129 @@ public class Alarms implements IAlarms {
     }
 
     @Override
-    public ArrayList<AlarmServiceModel> getListByRule(String id, DateTime from, DateTime to, String order, int skip,
-                                                      int limit, String[] devices) throws Exception {
-        String sqlQuery = QueryBuilder.buildSQL(
-                "alarm",
-                id, "rule.id",
-                from, "created",
-                to, "created",
-                order, "created",
-                skip,
-                limit,
-                devices, "device.id");
+    public CompletionStage<List<AlarmByRuleServiceModel>> getAlarmByRuleList(
+        DateTime from,
+        DateTime to,
+        String order,
+        int skip,
+        int limit,
+        String[] devices
+    ) throws Exception {
+
+        ArrayList<AlarmByRuleServiceModel> alarmByRuleList = new ArrayList<>();
+
+        // get list of rules
+        return this.rulesService.getListAsync(
+            order,
+            skip,
+            limit,
+            null).thenApply(rulesList -> {
+
+            // get open alarm count and most recent alarm for each rule
+            for (RuleServiceModel rule : rulesList) {
+
+                // get open/acknowledged alarm count for rule
+                String[] statusList = {"open", "acknowledged"};
+                String sqlQuery = QueryBuilder.getCountSQL(
+                    "alarm",
+                    rule.getId(), "rule.id",
+                    from, "created",
+                    to, "created",
+                    devices, "device.id",
+                    statusList, "status");
+
+                Document doc = new Document();
+
+                try {
+                    ArrayList<Document> resultList = this.storageClient.queryDocuments(
+                        this.databaseName,
+                        this.collectionId,
+                        null,
+                        sqlQuery,
+                        skip);
+                    if (resultList.size() > 0) {
+                        doc = resultList.get(0);
+                    }
+                    else {
+                        // There are no alarms for this time period,
+                        // skip and go to next rule
+                        continue;
+                    }
+                } catch (java.lang.Exception e) {
+                    throw new CompletionException(
+                        new ExternalDependencyException(
+                            "Could not retrieve alarm count for rule id "
+                                + rule.getId(), e));
+                }
+
+                String s = doc.toString();
+                ObjectMapper mapper = new ObjectMapper();
+                try {
+                    JsonNode j = mapper.readTree(doc.toJson());
+                } catch (Exception e) {
+
+                }
+
+                int count = doc.getInt("_aggregate");
+
+                // get most recent alarm for rule
+                AlarmServiceModel recentAlarm = new AlarmServiceModel();
+                try {
+                    ArrayList<AlarmServiceModel> resultList = getListByRuleId(
+                        rule.getId(),
+                        from,
+                        to,
+                        "asc",
+                        0,
+                        1,
+                        devices
+                    );
+                    if (resultList.size() > 0) {
+                        recentAlarm = resultList.get(0);
+                    }
+                    else {
+                        // There was no alarm found for this time period,
+                        // skip and go to next rule
+                        continue;
+                    }
+                } catch (java.lang.Exception e) {
+                    throw new CompletionException(
+                        new ExternalDependencyException(
+                            "Could not retrieve most recent alarm for rule id "
+                                + rule.getId(), e));
+                }
+
+                // Add alarm by rule to list
+                alarmByRuleList.add(
+                    new AlarmByRuleServiceModel(
+                        count,
+                        recentAlarm.getStatus(),
+                        recentAlarm.getDateCreated(),
+                        rule));
+            }
+
+            return alarmByRuleList;
+        });
+    }
+
+    @Override
+    public ArrayList<AlarmServiceModel> getListByRuleId(String id, DateTime from, DateTime to, String order, int skip,
+                                                        int limit, String[] devices) throws Exception {
+        String sqlQuery = QueryBuilder.getDocumentsSQL(
+            "alarm",
+            id, "rule.id",
+            from, "created",
+            to, "created",
+            order, "created",
+            skip,
+            limit,
+            devices, "device.id");
         ArrayList<Document> docs = this.storageClient.queryDocuments(
-                this.databaseName,
-                this.collectionId,
-                null,
-                sqlQuery,
-                skip);
+            this.databaseName,
+            this.collectionId,
+            null,
+            sqlQuery,
+            skip);
 
         ArrayList<AlarmServiceModel> alarms = new ArrayList<AlarmServiceModel>();
         for (Document doc : docs) {
@@ -58,22 +175,22 @@ public class Alarms implements IAlarms {
 
     @Override
     public ArrayList<AlarmServiceModel> getList(DateTime from, DateTime to, String order, int skip,
-                                             int limit, String[] devices) throws Exception {
-        String sqlQuery = QueryBuilder.buildSQL(
-                "alarm",
-                null, null,
-                from, "created",
-                to, "created",
-                order, "created",
-                skip,
-                limit,
-                devices, "device.id");
+                                                int limit, String[] devices) throws Exception {
+        String sqlQuery = QueryBuilder.getDocumentsSQL(
+            "alarm",
+            null, null,
+            from, "created",
+            to, "created",
+            order, "created",
+            skip,
+            limit,
+            devices, "device.id");
         ArrayList<Document> docs = this.storageClient.queryDocuments(
-                this.databaseName,
-                this.collectionId,
-                null,
-                sqlQuery,
-                skip);
+            this.databaseName,
+            this.collectionId,
+            null,
+            sqlQuery,
+            skip);
 
         ArrayList<AlarmServiceModel> alarms = new ArrayList<AlarmServiceModel>();
         for (Document doc : docs) {
@@ -88,9 +205,9 @@ public class Alarms implements IAlarms {
         document.set("status", status);
 
         document = this.storageClient.upsertDocument(
-                this.databaseName,
-                this.collectionId,
-                document
+            this.databaseName,
+            this.collectionId,
+            document
         );
 
         return new AlarmServiceModel(document);
@@ -99,11 +216,11 @@ public class Alarms implements IAlarms {
     private Document getDocumentById(String id) throws Exception {
         // Retrieve the document using the DocumentClient.
         ArrayList<Document> documentList = this.storageClient.queryDocuments(
-                this.databaseName,
-                this.collectionId,
-                null,
-                "SELECT * FROM c WHERE c.id='" + id + "'",
-                0);
+            this.databaseName,
+            this.collectionId,
+            null,
+            "SELECT * FROM c WHERE c.id='" + id + "'",
+            0);
 
         if (documentList.size() > 0) {
             return documentList.get(0);
@@ -111,4 +228,5 @@ public class Alarms implements IAlarms {
             return null;
         }
     }
+
 }

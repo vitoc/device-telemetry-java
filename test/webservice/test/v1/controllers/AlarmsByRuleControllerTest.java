@@ -197,7 +197,7 @@ public class AlarmsByRuleControllerTest {
 
         IAlarms alarms = mock(IAlarms.class);
         AlarmsByRuleController controller = new AlarmsByRuleController(alarms);
-        when(alarms.getListByRule(
+        when(alarms.getListByRuleId(
             "1", DateTime.now(), DateTime.now(), "asc", 0, 100, new String[0]))
             .thenReturn(alarmResult);
 
