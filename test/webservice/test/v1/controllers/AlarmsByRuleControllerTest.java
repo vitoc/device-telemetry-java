@@ -5,6 +5,7 @@ package webservice.test.v1.controllers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.azure.iotsolutions.devicetelemetry.services.Alarms;
 import com.microsoft.azure.iotsolutions.devicetelemetry.services.IAlarms;
+import com.microsoft.azure.iotsolutions.devicetelemetry.services.IRules;
 import com.microsoft.azure.iotsolutions.devicetelemetry.services.storage.StorageClient;
 import com.microsoft.azure.iotsolutions.devicetelemetry.services.models.AlarmServiceModel;
 import com.microsoft.azure.iotsolutions.devicetelemetry.services.runtime.IServicesConfig;
@@ -54,6 +55,7 @@ public class AlarmsByRuleControllerTest {
         // setup before every test
         try {
             IServicesConfig servicesConfig = new Config().getServicesConfig();
+            IRules rules = mock(IRules.class);
             StorageClient client = new StorageClient(servicesConfig);
             String dbName = servicesConfig.getAlarmsStorageConfig().getDocumentDbDatabase();
             String collName = servicesConfig.getAlarmsStorageConfig().getDocumentDbCollection();
@@ -67,7 +69,7 @@ public class AlarmsByRuleControllerTest {
                     alarmToDocument(sampleAlarm)
                 );
             }
-            Alarms rule = new Alarms(servicesConfig, client);
+            Alarms rule = new Alarms(servicesConfig, rules, client);
             controller = new AlarmsByRuleController(rule);
         } catch (Exception ex) {
             log.error("Exception setting up test", ex);
@@ -215,7 +217,7 @@ public class AlarmsByRuleControllerTest {
             add(new AlarmServiceModel());
             add(new AlarmServiceModel());
         }};
-
+        
         IAlarms alarms = mock(IAlarms.class);
         AlarmsByRuleController controller = new AlarmsByRuleController(alarms);
         when(alarms.getList(
@@ -223,9 +225,11 @@ public class AlarmsByRuleControllerTest {
             .thenReturn(alarmResult);
 
         // Act
-        Result response = controller.list(null, null, null, 0, 0, null);
-
-        // Assert
-        assertThat(response.body().isKnownEmpty(), is(false));
+        controller.listAsync(null, null, null, 0, 0, null)
+            .thenApply(response -> {
+                // Assert
+                assertThat(response.body().isKnownEmpty(), is(false));
+                return null;
+            });
     }
 }

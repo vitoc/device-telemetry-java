@@ -39,8 +39,8 @@ public class AlarmsByRuleController {
      *
      * @return List of alarms.
      */
-    public CompletionStage<Result> list(String from, String to, String order, int skip,
-                                        int limit, String devices) throws Exception {
+    public CompletionStage<Result> listAsync(String from, String to, String order, int skip,
+                                             int limit, String devices) throws Exception {
         // TODO: move this logic to the storage engine, depending on the
         // storage type the limit will be different. 200 is DocumentDb
         // limit for the IN clause.
