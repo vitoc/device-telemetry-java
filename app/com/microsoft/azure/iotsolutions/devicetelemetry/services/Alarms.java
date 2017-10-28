@@ -96,14 +96,6 @@ public class Alarms implements IAlarms {
                                 + rule.getId(), e));
                 }
 
-                String s = doc.toString();
-                ObjectMapper mapper = new ObjectMapper();
-                try {
-                    JsonNode j = mapper.readTree(doc.toJson());
-                } catch (Exception e) {
-
-                }
-
                 int count = doc.getInt("_aggregate");
 
                 // get most recent alarm for rule

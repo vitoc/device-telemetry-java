@@ -10,6 +10,7 @@ import com.microsoft.azure.iotsolutions.devicetelemetry.services.Rules;
 import com.microsoft.azure.iotsolutions.devicetelemetry.services.models.AlarmByRuleServiceModel;
 import com.microsoft.azure.iotsolutions.devicetelemetry.services.models.ConditionServiceModel;
 import com.microsoft.azure.iotsolutions.devicetelemetry.services.models.RuleServiceModel;
+import com.microsoft.azure.iotsolutions.devicetelemetry.services.storage.IStorageClient;
 import com.microsoft.azure.iotsolutions.devicetelemetry.services.storage.StorageClient;
 import com.microsoft.azure.iotsolutions.devicetelemetry.services.models.AlarmServiceModel;
 import com.microsoft.azure.iotsolutions.devicetelemetry.services.runtime.IServicesConfig;
@@ -19,6 +20,7 @@ import helpers.UnitTest;
 import org.eclipse.jetty.util.Callback;
 import org.joda.time.DateTime;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -67,25 +69,13 @@ public class AlarmsByRuleControllerTest {
         // setup before every test
         try {
             IServicesConfig servicesConfig = new Config().getServicesConfig();
-            StorageClient client = new StorageClient(servicesConfig);
-            String dbName = servicesConfig.getAlarmsStorageConfig().getDocumentDbDatabase();
-            String collName = servicesConfig.getAlarmsStorageConfig().getDocumentDbCollection();
-            client.createCollectionIfNotExists(dbName, collName);
-            ArrayList<AlarmServiceModel> sampleAlarms = getSampleAlarms();
-            ObjectMapper mapper = new ObjectMapper();
-            for (AlarmServiceModel sampleAlarm : sampleAlarms) {
-                client.upsertDocument(
-                    dbName,
-                    collName,
-                    alarmToDocument(sampleAlarm)
-                );
-            }
-
+            IStorageClient client = mock(IStorageClient.class);
             this.rules = mock(IRules.class);
             this.alarms = new Alarms(servicesConfig, this.rules, client);
             this.controller = new AlarmsByRuleController(this.alarms);
         } catch (Exception ex) {
             log.error("Exception setting up test", ex);
+            Assert.fail(ex.getMessage());
         }
     }
 
