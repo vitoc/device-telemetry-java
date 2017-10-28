@@ -3,7 +3,7 @@
 package com.microsoft.azure.iotsolutions.devicetelemetry.webservice.v1.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.microsoft.azure.iotsolutions.devicetelemetry.services.models.AlarmByRuleServiceModel;
+import com.microsoft.azure.iotsolutions.devicetelemetry.services.models.AlarmCountByRuleServiceModel;
 import com.microsoft.azure.iotsolutions.devicetelemetry.webservice.v1.Version;
 
 import java.util.ArrayList;
@@ -14,11 +14,11 @@ import java.util.List;
 public class AlarmByRuleListApiModel {
     private final ArrayList<AlarmByRuleApiModel> items;
 
-    public AlarmByRuleListApiModel(final List<AlarmByRuleServiceModel> alarms) {
+    public AlarmByRuleListApiModel(final List<AlarmCountByRuleServiceModel> alarms) {
         this.items = new ArrayList<>();
 
         if (alarms != null) {
-            for (AlarmByRuleServiceModel alarm : alarms) {
+            for (AlarmCountByRuleServiceModel alarm : alarms) {
                 items.add(new AlarmByRuleApiModel(
                     alarm.getCount(),
                     alarm.getStatus(),

@@ -2,13 +2,11 @@
 
 package com.microsoft.azure.iotsolutions.devicetelemetry.services;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 import com.microsoft.azure.documentdb.Document;
 import com.microsoft.azure.iotsolutions.devicetelemetry.services.exceptions.ExternalDependencyException;
 import com.microsoft.azure.iotsolutions.devicetelemetry.services.helpers.QueryBuilder;
-import com.microsoft.azure.iotsolutions.devicetelemetry.services.models.AlarmByRuleServiceModel;
+import com.microsoft.azure.iotsolutions.devicetelemetry.services.models.AlarmCountByRuleServiceModel;
 import com.microsoft.azure.iotsolutions.devicetelemetry.services.models.AlarmServiceModel;
 import com.microsoft.azure.iotsolutions.devicetelemetry.services.models.RuleServiceModel;
 import com.microsoft.azure.iotsolutions.devicetelemetry.services.runtime.IServicesConfig;
@@ -41,7 +39,7 @@ public class Alarms implements IAlarms {
     }
 
     @Override
-    public CompletionStage<List<AlarmByRuleServiceModel>> getAlarmByRuleList(
+    public CompletionStage<List<AlarmCountByRuleServiceModel>> getAlarmCountByRuleList(
         DateTime from,
         DateTime to,
         String order,
@@ -50,7 +48,7 @@ public class Alarms implements IAlarms {
         String[] devices
     ) throws Exception {
 
-        ArrayList<AlarmByRuleServiceModel> alarmByRuleList = new ArrayList<>();
+        ArrayList<AlarmCountByRuleServiceModel> alarmByRuleList = new ArrayList<>();
 
         // get list of rules
         return this.rulesService.getListAsync(
@@ -83,8 +81,7 @@ public class Alarms implements IAlarms {
                         skip);
                     if (resultList.size() > 0) {
                         doc = resultList.get(0);
-                    }
-                    else {
+                    } else {
                         // There are no alarms for this time period,
                         // skip and go to next rule
                         continue;
@@ -112,8 +109,7 @@ public class Alarms implements IAlarms {
                     );
                     if (resultList.size() > 0) {
                         recentAlarm = resultList.get(0);
-                    }
-                    else {
+                    } else {
                         // There was no alarm found for this time period,
                         // skip and go to next rule
                         continue;
@@ -127,7 +123,7 @@ public class Alarms implements IAlarms {
 
                 // Add alarm by rule to list
                 alarmByRuleList.add(
-                    new AlarmByRuleServiceModel(
+                    new AlarmCountByRuleServiceModel(
                         count,
                         recentAlarm.getStatus(),
                         recentAlarm.getDateCreated(),

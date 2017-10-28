@@ -2,18 +2,16 @@
 
 package webservice.test.v1.controllers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.microsoft.azure.documentdb.Document;
 import com.microsoft.azure.iotsolutions.devicetelemetry.services.Alarms;
 import com.microsoft.azure.iotsolutions.devicetelemetry.services.IAlarms;
 import com.microsoft.azure.iotsolutions.devicetelemetry.services.IRules;
-import com.microsoft.azure.iotsolutions.devicetelemetry.services.Rules;
-import com.microsoft.azure.iotsolutions.devicetelemetry.services.models.AlarmByRuleServiceModel;
+import com.microsoft.azure.iotsolutions.devicetelemetry.services.models.AlarmCountByRuleServiceModel;
+import com.microsoft.azure.iotsolutions.devicetelemetry.services.models.AlarmServiceModel;
 import com.microsoft.azure.iotsolutions.devicetelemetry.services.models.ConditionServiceModel;
 import com.microsoft.azure.iotsolutions.devicetelemetry.services.models.RuleServiceModel;
-import com.microsoft.azure.iotsolutions.devicetelemetry.services.storage.IStorageClient;
-import com.microsoft.azure.iotsolutions.devicetelemetry.services.storage.StorageClient;
-import com.microsoft.azure.iotsolutions.devicetelemetry.services.models.AlarmServiceModel;
 import com.microsoft.azure.iotsolutions.devicetelemetry.services.runtime.IServicesConfig;
+import com.microsoft.azure.iotsolutions.devicetelemetry.services.storage.IStorageClient;
 import com.microsoft.azure.iotsolutions.devicetelemetry.webservice.runtime.Config;
 import com.microsoft.azure.iotsolutions.devicetelemetry.webservice.v1.controllers.AlarmsByRuleController;
 import helpers.UnitTest;
@@ -25,9 +23,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import play.Logger;
-import play.libs.ws.WSClient;
 import play.mvc.Result;
-import com.microsoft.azure.documentdb.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,9 +32,6 @@ import java.util.concurrent.CompletionStage;
 
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyObject;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -245,13 +238,13 @@ public class AlarmsByRuleControllerTest {
             .thenReturn(ruleListResult);
 
         // sample alarms
-        ArrayList<AlarmByRuleServiceModel> alarmList = new ArrayList<>();
-        alarmList.add(new AlarmByRuleServiceModel(5, "open", DateTime.now(), sampleRule));
+        ArrayList<AlarmCountByRuleServiceModel> alarmList = new ArrayList<>();
+        alarmList.add(new AlarmCountByRuleServiceModel(5, "open", DateTime.now(), sampleRule));
 
-        CompletionStage<List<AlarmByRuleServiceModel>> alarmListResult =
+        CompletionStage<List<AlarmCountByRuleServiceModel>> alarmListResult =
             Callback.Completable.completedFuture(alarmList);
 
-        when(this.alarms.getAlarmByRuleList(
+        when(this.alarms.getAlarmCountByRuleList(
             DateTime.parse("2017-10-18T19:53:49"), DateTime.parse("2017-10-18T19:53:49"), "asc", 0, 100, new String[0]))
             .thenReturn(alarmListResult);
 
@@ -259,7 +252,7 @@ public class AlarmsByRuleControllerTest {
         this.controller.listAsync(
             "2017-10-18T19:53:49",
             "2017-10-18T19:53:49",
-           "asc",
+            "asc",
             0,
             100,
             "")

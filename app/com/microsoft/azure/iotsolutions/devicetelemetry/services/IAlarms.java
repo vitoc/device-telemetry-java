@@ -3,7 +3,7 @@
 package com.microsoft.azure.iotsolutions.devicetelemetry.services;
 
 import com.google.inject.ImplementedBy;
-import com.microsoft.azure.iotsolutions.devicetelemetry.services.models.AlarmByRuleServiceModel;
+import com.microsoft.azure.iotsolutions.devicetelemetry.services.models.AlarmCountByRuleServiceModel;
 import com.microsoft.azure.iotsolutions.devicetelemetry.services.models.AlarmServiceModel;
 import org.joda.time.DateTime;
 
@@ -15,7 +15,7 @@ import java.util.concurrent.CompletionStage;
 public interface IAlarms {
     AlarmServiceModel get(String id) throws Exception;
 
-    CompletionStage<List<AlarmByRuleServiceModel>> getAlarmByRuleList(
+    CompletionStage<List<AlarmCountByRuleServiceModel>> getAlarmCountByRuleList(
         DateTime from,
         DateTime to,
         String order,

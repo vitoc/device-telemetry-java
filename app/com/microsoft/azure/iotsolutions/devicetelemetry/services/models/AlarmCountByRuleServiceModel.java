@@ -3,15 +3,14 @@
 package com.microsoft.azure.iotsolutions.devicetelemetry.services.models;
 
 import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
 
-public final class AlarmByRuleServiceModel {
+public final class AlarmCountByRuleServiceModel {
     private final int count;
     private final String status;
     private final DateTime dateCreated;
     private final RuleServiceModel rule;
 
-    public AlarmByRuleServiceModel(
+    public AlarmCountByRuleServiceModel(
         final int count,
         final String status,
         final DateTime dateCreated,

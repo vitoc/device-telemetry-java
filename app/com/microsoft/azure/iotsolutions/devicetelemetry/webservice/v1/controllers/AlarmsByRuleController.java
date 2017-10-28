@@ -54,7 +54,7 @@ public class AlarmsByRuleController {
                 badRequest("The number of devices cannot exceed 200"));
         }
 
-        return this.alarmsByRule.getAlarmByRuleList(
+        return this.alarmsByRule.getAlarmCountByRuleList(
             DateHelper.parseDate(from),
             DateHelper.parseDate(to),
             order,
