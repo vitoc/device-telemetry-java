@@ -74,11 +74,11 @@ public class QueryBuilder {
         String toProperty,
         String[] devices,
         String devicesProperty,
-        String[] statusList,
-        String statusProperty) throws InvalidInputException {
+        String[] filterValues,
+        String filterProperty) throws InvalidInputException {
 
         String deviceIds = String.join("`,`", devices);
-        String statuses = String.join("`,`", statusList);
+        String filter = String.join("`,`", filterValues);
 
         // validate and sanitize input strings
         // TODO https://github.com/Azure/device-telemetry-java/issues/98
@@ -89,8 +89,8 @@ public class QueryBuilder {
         toProperty = validateInput(toProperty);
         deviceIds = validateInput(deviceIds);
         devicesProperty = validateInput(devicesProperty);
-        statuses = validateInput(statuses);
-        statusProperty = validateInput(statusProperty);
+        filter = validateInput(filter);
+        filterProperty = validateInput(filterProperty);
 
         // build query
         StringBuilder queryBuilder = new StringBuilder();
@@ -112,8 +112,8 @@ public class QueryBuilder {
             queryBuilder.append(" AND c[`" + toProperty + "`] <= " + to.toDateTime().getMillis());
         }
 
-        if (statusList.length > 0) {
-            queryBuilder.append(" AND c[`" + statusProperty + "`] IN (`" + statuses + "`)");
+        if (filterValues.length > 0) {
+            queryBuilder.append(" AND c[`" + filterProperty + "`] IN (`" + filter + "`)");
         }
 
         queryBuilder.append(")");
