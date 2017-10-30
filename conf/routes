@@ -25,8 +25,8 @@ PATCH  /v1/alarms/:id/         com.microsoft.azure.iotsolutions.devicetelemetry.
 
 GET    /v1/alarmsbyrule              com.microsoft.azure.iotsolutions.devicetelemetry.webservice.v1.controllers.AlarmsByRuleController.listAsync(from ?= null, to ?= null, order: String ?= "asc", skip: Int ?= 0, limit: Int ?= 1000, devices ?= null)
 GET    /v1/alarmsbyrule/             com.microsoft.azure.iotsolutions.devicetelemetry.webservice.v1.controllers.AlarmsByRuleController.listAsync(from ?= null, to ?= null, order: String ?= "asc", skip: Int ?= 0, limit: Int ?= 1000, devices ?= null)
-GET    /v1/alarmsbyrule/:rule_id     com.microsoft.azure.iotsolutions.devicetelemetry.webservice.v1.controllers.AlarmsByRuleController.get(rule_id, from ?= null, to ?= null, order: String ?= "asc", skip: Int ?= 0, limit: Int ?=1000, devices ?= null)
-GET    /v1/alarmsbyrule/:rule_id/    com.microsoft.azure.iotsolutions.devicetelemetry.webservice.v1.controllers.AlarmsByRuleController.get(rule_id, from ?= null, to ?= null, order: String ?= "asc", skip: Int ?= 0, limit: Int ?=1000, devices ?= null)
+GET    /v1/alarmsbyrule/:id     com.microsoft.azure.iotsolutions.devicetelemetry.webservice.v1.controllers.AlarmsByRuleController.get(id, from ?= null, to ?= null, order: String ?= "asc", skip: Int ?= 0, limit: Int ?=1000, devices ?= null)
+GET    /v1/alarmsbyrule/:id/    com.microsoft.azure.iotsolutions.devicetelemetry.webservice.v1.controllers.AlarmsByRuleController.get(id, from ?= null, to ?= null, order: String ?= "asc", skip: Int ?= 0, limit: Int ?=1000, devices ?= null)
 
 # Rules list and management
 

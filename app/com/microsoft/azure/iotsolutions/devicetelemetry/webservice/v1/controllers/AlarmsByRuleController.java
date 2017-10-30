@@ -4,6 +4,7 @@ package com.microsoft.azure.iotsolutions.devicetelemetry.webservice.v1.controlle
 
 import com.google.inject.Inject;
 import com.microsoft.azure.iotsolutions.devicetelemetry.services.IAlarms;
+import com.microsoft.azure.iotsolutions.devicetelemetry.services.IRules;
 import com.microsoft.azure.iotsolutions.devicetelemetry.webservice.v1.controllers.helpers.DateHelper;
 import com.microsoft.azure.iotsolutions.devicetelemetry.webservice.v1.models.AlarmByRuleListApiModel;
 import com.microsoft.azure.iotsolutions.devicetelemetry.webservice.v1.models.AlarmListByRuleApiModel;
@@ -21,11 +22,13 @@ import static play.mvc.Results.ok;
 public class AlarmsByRuleController {
     private static final Logger.ALogger log = Logger.of(AlarmsByRuleController.class);
 
-    private final IAlarms alarmsByRule;
+    private final IAlarms alarmsService;
+    private final IRules rulesService;
 
     @Inject
-    public AlarmsByRuleController(IAlarms alarmsByRule) {
-        this.alarmsByRule = alarmsByRule;
+    public AlarmsByRuleController(IAlarms alarmsService, IRules rulesService) {
+        this.alarmsService = alarmsService;
+        this.rulesService = rulesService;
     }
 
     /**
@@ -54,7 +57,7 @@ public class AlarmsByRuleController {
                 badRequest("The number of devices cannot exceed 200"));
         }
 
-        return this.alarmsByRule.getAlarmCountByRuleList(
+        return this.rulesService.getAlarmCountForList(
             DateHelper.parseDate(from),
             DateHelper.parseDate(to),
             order,
@@ -83,7 +86,7 @@ public class AlarmsByRuleController {
         }
 
         return ok(toJson(new AlarmListByRuleApiModel(
-            this.alarmsByRule.getListByRuleId(
+            this.alarmsService.getListByRuleId(
                 id,
                 DateHelper.parseDate(from),
                 DateHelper.parseDate(to),

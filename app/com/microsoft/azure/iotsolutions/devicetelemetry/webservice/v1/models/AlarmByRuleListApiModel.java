@@ -22,7 +22,7 @@ public class AlarmByRuleListApiModel {
                 items.add(new AlarmByRuleApiModel(
                     alarm.getCount(),
                     alarm.getStatus(),
-                    alarm.getDateCreated(),
+                    alarm.getMessageTime(),
                     new AlarmRuleApiModel(alarm.getRule())
                 ));
             }

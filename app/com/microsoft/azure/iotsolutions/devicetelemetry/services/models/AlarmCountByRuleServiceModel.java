@@ -7,18 +7,18 @@ import org.joda.time.DateTime;
 public final class AlarmCountByRuleServiceModel {
     private final int count;
     private final String status;
-    private final DateTime dateCreated;
+    private final DateTime messageTime;
     private final RuleServiceModel rule;
 
     public AlarmCountByRuleServiceModel(
         final int count,
         final String status,
-        final DateTime dateCreated,
+        final DateTime messageTime,
         final RuleServiceModel rule) {
 
         this.count = count;
         this.status = status;
-        this.dateCreated = dateCreated;
+        this.messageTime = messageTime;
         this.rule = rule;
     }
 
@@ -30,8 +30,8 @@ public final class AlarmCountByRuleServiceModel {
         return this.status;
     }
 
-    public DateTime getDateCreated() {
-        return this.dateCreated;
+    public DateTime getMessageTime() {
+        return this.messageTime;
     }
 
     public RuleServiceModel getRule() {
