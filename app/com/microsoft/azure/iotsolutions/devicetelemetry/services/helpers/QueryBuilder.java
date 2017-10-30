@@ -6,14 +6,11 @@ import com.microsoft.azure.iotsolutions.devicetelemetry.services.exceptions.Inva
 import org.joda.time.DateTime;
 import play.Logger;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 public class QueryBuilder {
 
     private static final Logger.ALogger log = Logger.of(QueryBuilder.class);
 
-    private static final String ILLEGAL_CHAR_PATTERN = "[^A-Za-z0-9:;.,_-]";
+    private static final String LEGAL_CHAR_PATTERN = "[a-zA-Z0-9,.;:_`'-]*";
 
     public static String getDocumentsSQL(
         String schemaName,
@@ -41,7 +38,7 @@ public class QueryBuilder {
             queryBuilder.append(" AND c[`" + devicesProperty + "`] IN (`" + deviceIds + "`)");
         }
 
-        if(byId != null) {
+        if (byId != null) {
             queryBuilder.append(" AND c[`" + byIdProperty + "`] = `" + byId + "`");
         }
 
@@ -54,7 +51,7 @@ public class QueryBuilder {
         }
         queryBuilder.append(")");
 
-        if(order == null) {
+        if (order == null) {
             queryBuilder.append(" ORDER BY c[`" + orderProperty + "`] DESC");
         } else {
             if (order.equalsIgnoreCase("desc")) {
@@ -66,7 +63,7 @@ public class QueryBuilder {
 
         return queryBuilder.toString().replace('`', '"');
     }
-    
+
     public static String getCountSQL(
         String schemaName,
         String byId,
@@ -103,7 +100,7 @@ public class QueryBuilder {
             queryBuilder.append(" AND c[`" + devicesProperty + "`] IN (`" + deviceIds + "`)");
         }
 
-        if(byId != null) {
+        if (byId != null) {
             queryBuilder.append(" AND c[`" + byIdProperty + "`] = `" + byId + "`");
         }
 
@@ -130,12 +127,9 @@ public class QueryBuilder {
         input = input.trim();
 
         // check for illegal characters
-        Pattern pattern = Pattern.compile(ILLEGAL_CHAR_PATTERN);
-        Matcher matcher = pattern.matcher(input);
-
-        if (matcher.find()) {
+        if (!input.matches(LEGAL_CHAR_PATTERN)) {
             String errorMsg = "input contains illegal characters. Allowable " +
-                "input A-Z a-z 0-9 :;.,_-";
+                "input A-Z a-z 0-9 :;.,_`-";
             log.error(errorMsg);
             throw new InvalidInputException(errorMsg);
         }
