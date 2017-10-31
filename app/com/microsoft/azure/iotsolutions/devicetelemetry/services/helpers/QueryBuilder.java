@@ -10,7 +10,7 @@ public class QueryBuilder {
 
     private static final Logger.ALogger log = Logger.of(QueryBuilder.class);
 
-    private static final String LEGAL_CHAR_PATTERN = "[a-zA-Z0-9,.;:_`'-]*";
+    private static final String VALID_CHAR_PATTERN = "[a-zA-Z0-9,.;:_'-]*";
 
     public static String getDocumentsSQL(
         String schemaName,
@@ -87,9 +87,9 @@ public class QueryBuilder {
         byIdProperty = validateInput(byIdProperty);
         fromProperty = validateInput(fromProperty);
         toProperty = validateInput(toProperty);
-        deviceIds = validateInput(deviceIds);
+        validateInput(String.join(",", devices));
         devicesProperty = validateInput(devicesProperty);
-        filter = validateInput(filter);
+        validateInput(String.join(",", filterValues));
         filterProperty = validateInput(filterProperty);
 
         // build query
@@ -126,10 +126,10 @@ public class QueryBuilder {
         // trim string
         input = input.trim();
 
-        // check for illegal characters
-        if (!input.matches(LEGAL_CHAR_PATTERN)) {
-            String errorMsg = "input contains illegal characters. Allowable " +
-                "input A-Z a-z 0-9 :;.,_`-";
+        // check for invalid characters
+        if (!input.matches(VALID_CHAR_PATTERN)) {
+            String errorMsg = "input contains invalid characters. Allowable " +
+                "input A-Z a-z 0-9 :;.,_-";
             log.error(errorMsg);
             throw new InvalidInputException(errorMsg);
         }

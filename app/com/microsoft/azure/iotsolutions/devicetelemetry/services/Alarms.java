@@ -36,7 +36,7 @@ public class Alarms implements IAlarms {
     private static final String ALARM_STATUS_ACKNOWLEDGED = "acknowledged";
 
     @Inject
-    public Alarms(IServicesConfig servicesConfig, IStorageClient storageClient) throws Exception {
+    public Alarms(IServicesConfig servicesConfig, IStorageClient storageClient) {
         this.storageClient = storageClient;
         this.databaseName = servicesConfig.getAlarmsStorageConfig().getDocumentDbDatabase();
         this.collectionId = servicesConfig.getAlarmsStorageConfig().getDocumentDbCollection();
@@ -77,7 +77,6 @@ public class Alarms implements IAlarms {
     /*
      * Returns the count of alarms for a given rule id. Can be filtered by time
      * period (from/to), and devices.
-     *
      */
     @Override
     public int getCountByRuleId(

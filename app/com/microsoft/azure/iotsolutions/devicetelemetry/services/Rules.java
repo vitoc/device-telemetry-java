@@ -159,7 +159,7 @@ public final class Rules implements IRules {
         int skip,
         int limit,
         String[] devices
-    ) throws Exception {
+    ) throws ExternalDependencyException {
 
         ArrayList<AlarmCountByRuleServiceModel> alarmByRuleList = new ArrayList<>();
 
@@ -178,11 +178,12 @@ public final class Rules implements IRules {
                             to,
                             devices);
                     } catch (java.lang.Exception e) {
-                        String errorMsg = "Could not retrieve alarm count for " +
-                            "rule id " + rule.getId();
-                        log.error(errorMsg, e);
+                        log.error("Could not retrieve alarm count for " +
+                            "rule id {}", rule.getId(), e);
                         throw new CompletionException(
-                            new ExternalDependencyException(errorMsg, e));
+                            new ExternalDependencyException(
+                                "Could not retrieve alarm count for " +
+                                "rule id " + rule.getId(), e));
                     }
 
                     // skip to next rule if no alarms found
@@ -191,7 +192,7 @@ public final class Rules implements IRules {
                     }
 
                     // get most recent alarm for rule
-                    AlarmServiceModel recentAlarm = getMostRecentAlarmForRule(
+                    AlarmServiceModel recentAlarm = this.getMostRecentAlarmForRule(
                         rule.getId(),
                         from,
                         to,
@@ -199,12 +200,13 @@ public final class Rules implements IRules {
 
                     // should always find alarm at this point
                     if (recentAlarm == null) {
-                        String errorMsg = "Alarm count mismatch -- could not " +
-                            "find alarm for rule id " + rule.getId() +
-                            "when alarm count for rule is " + alarmCount;
-                        log.error(errorMsg);
+                        log.error("Alarm count mismatch -- could not " +
+                            "find alarm for rule id {} when alarm count for " +
+                            "rule is {}.", rule.getId(), alarmCount);
                         throw new CompletionException(
-                            new ExternalDependencyException(errorMsg));
+                            new ExternalDependencyException(
+                                "Alarm count mismatch -- could not " +
+                                "find alarm for rule id " + rule.getId()));
                     }
 
                     // Add alarm by rule to list
